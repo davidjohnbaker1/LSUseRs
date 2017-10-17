@@ -1,9 +1,9 @@
 # LSUseRs
 
-This repoository contains a collection of materials used for series of lecture workshops helping LSU psych department learn R.
+This repository contains a collection of materials used for series of lecture workshops helping LSU psych department learn R.
 Each directory contains both slides as well as some R scripts that were used in the collection.
 Notes on each session and its contents can be found below.
-Eventually materials will be collated and will be ready for use for any department looking to migrate their department's data cleaning and anlysis to R.
+Eventually materials will be collated and will be ready for use for any department looking to migrate their department's data cleaning and analysis to R.
 
 ## Intro to R  
 
