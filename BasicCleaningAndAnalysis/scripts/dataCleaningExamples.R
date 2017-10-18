@@ -1,0 +1,282 @@
+#======================================================================================================
+# LSUserRs Data Cleaning Template (Title Your Script)
+# Say a couple of the things that it does here. Who wrote it?
+# When was the last edit? What does it do? Does it work with any data type?
+# Rubber duck this as much as possible because you won't remember
+# what you did in 6 months. Especially if you come up with something clever.
+#======================================================================================================
+# TRY YOUR BEST TO NOT JUST COPY AND PASTE CODE, GOOGLE WHAT YOU WANT, GET FAMILIAR WITH A FUNCTION'S
+# ARGUMENTS AND EMBRACE YOUR INNER NERD AND READ THE DOCUMENTATION!! 
+#======================================================================================================
+# Import Libraries 
+#--------------------------------------------------
+# Load all libraries at the start of your script, remember they have to be installed first! 
+library(stringr)
+library(data.table)
+library(psych)
+
+#======================================================================================================
+# Set up your working directory
+#--------------------------------------------------
+# Use the space below to set your wd as you please. 
+# Try to pick a path that makes sense 
+setwd("/Users/davidjohnbaker/Desktop/projects/LSUseRs/BasicCleaningAndAnalysis/data/")
+
+
+#======================================================================================================
+# Load in your data
+#--------------------------------------------------
+# After telling R where to look in your computer/dropbox/google drive/R Project grab what you need!
+# Make sure to load in both datasets as we will want them both in our analysis.
+# We also want to make sure to clean both datasets as we are going. 
+experiment.data <- read.csv("Demographic_Data.csv")
+item.level.data <- read.csv("ItemLevelData.csv")
+
+
+#======================================================================================================
+# Inspect the structure of your data
+#--------------------------------------------------
+# R is going to do its best to guess what kind of data each of the columns of your spreadsheet are.
+# Sometimes it thinks things are lists (especially if importing from SPSS)
+# Go through each variable as you would with other programs and make sure you set it to what 
+# you think will be most useful later. The big thing to check here is categorical variables, and
+# if you see any sort of string/character variables.
+
+# View(experiment.data) # Looks OK on surface levels.... 
+str(experiment.data) # Check to see if R guessed correctly on data types
+
+# Using read.csv() R had a couple of bad guesses on variables we might need.
+# We will have to reassign the variable types or else we'll run into trouble later.
+# In R we use Factor for grouping and analysis, best practice is to not set it as that
+# until you are OK with the format. It's easist to manipulate a character or string.
+
+experiment.data$inst <- as.character(experiment.data$inst)
+experiment.data$Gender <- as.character(experiment.data$Gender)
+experiment.data$Major <- as.character(experiment.data$Major)
+experiment.data$Minor <- as.character(experiment.data$Minor)
+experiment.data$BeginTrain <- as.character(experiment.data$BeginTrain)
+experiment.data$AbsPitch <- as.character(experiment.data$AbsPitch)
+experiment.data$Live12Mo <- as.numeric(experiment.data$Live12Mo)
+experiment.data$ActListenMin <- as.character(experiment.data$ActListenMin)
+
+str(experiment.data) # Notice how that our character columns now have " " around them.
+
+
+#======================================================================================================
+# Check for Import Errors 
+#--------------------------------------------------
+# Use a combination of the names(), View(), table(), is.na(), and complete.cases() to get a brief summary of what is 
+# going on in your data set to be sure there were minimal import errors and your data looks like
+# you want it to. It might also be worth plottting some variables and use some common sense to find mistakes.
+# Are there any participants with 999 as their subject number? Negative values where there shouldn't be? 
+# If there are, note them and fix these before starting any sort of statistical screening! 
+
+table(complete.cases(experiment.data)) # Not all observations have everything! 
+complete.cases(experiment.data)
+table(is.na(experiment.data))
+
+# Gotta decide what to do about it!!
+
+#======================================================================================================
+# Cleaning Free Text Response Data
+#--------------------------------------------------
+# In your data cleaning before you might have noticed that participants were able to freely respond 
+# with whatever gender they wanted. Most data look to fall within the normal binary, but the computer
+# needs things to be exactly the same before making an easy split? 
+# What would be the laziest, most effecient way to fix the gender column? What format does the variable
+# have to be in order to make the changes that you need? 
+# When you have it figured out, make sure to run the code from top to bottom to make sure things go in 
+# the right order!!! As we are not dealing with huge amounts of data, the table() function will help out.
+
+# Let's now take a look at some of these problem ones
+# Why, for example is Begin Training not working? Print the variable to see.
+
+experiment.data$BeginTrain
+
+# Some people didn't respond, one person decided to tell us what grade they started.
+# There are 2 ways to go about fixing this. We could "hardcode" the problem if this 
+# is the only time we will do this analysis on this dataset or we could try to write a
+# line of code that doesn't care what exact position the error is.
+# On line 250 in this object is the thing that needs swapping out.
+# We can access it with R's indexing. Counting from index we see it's in line 250.
+
+experiment.data$BeginTrain[250]
+
+# Quick, ask yourself why we don't use the comma here?! 
+# If you were set on using the comma, what would you change? 
+# Ok, now let's swap in the value we want with <-
+# Remember we are putting a value into a character operator so it has to have "" 
+
+experiment.data$BeginTrain[250] <- "12"
+experiment.data$BeginTrain 
+
+# Nice, no more text data, but what if it's not always in 250?
+# For example, what do we do with all these blank spaces?
+# Let's use R's inbuilt ifelse() function to go through this vector and swap
+# out what we want! 
+
+ifelse(experiment.data$BeginTrain == "","0",experiment.data$BeginTrain)
+
+# This works by going through each entry and doing the conditional on the value!
+# Let's now write over our old column and in the same step make everything a number.
+experiment.data$BeginTrain <- as.numeric(ifelse(experiment.data$BeginTrain == "","0",experiment.data$BeginTrain))
+
+#Tah Dah!!
+experiment.data$BeginTrain
+
+# Let's now clean up the Gender column, first let's look at it
+experiment.data$Gender # Are there any common trends?
+
+table(experiment.data$Gender)
+
+# Pretty much two answers, how do we make them all say one thing?
+# Let's use the stringr package for this. Import it up top.
+
+# Clean Gender
+
+experiment.data$Gender <- str_to_lower(experiment.data$Gender)
+experiment.data$Gender <- str_replace(experiment.data$Gender,"^.*f.*$","Female")
+experiment.data$Gender <- str_replace(experiment.data$Gender,"^m.*$","Male")
+experiment.data$Gender <- str_replace(experiment.data$Gender,"^country$","No Response")
+experiment.data$Gender <- str_replace(experiment.data$Gender,"","No Response")
+experiment.data$Gender[30] <- "No Response" #Something Might Be Up w this datapoint?
+
+experiment.data$Gender <- as.factor(experiment.data$Gender)
+
+#--------------------------------------------------
+# Can we do same thing for AP? 
+experiment.data$AbsPitch
+experiment.data$AbsPitch <- str_to_lower(experiment.data$AbsPitch)
+experiment.data$AbsPitch <- str_replace(experiment.data$AbsPitch,"^.*n.*$","no")
+experiment.data$AbsPitch[30] <- "no"
+experiment.data$AbsPitch <- as.factor(experiment.data$AbsPitch)
+table(experiment.data$AbsPitch)
+
+
+#======================================================================================================
+# Merging Data
+#--------------------------------------------------
+# Often we will have data from other spreadsheets we want to attach such as demographic data 
+# to behavioral responses. Using the data.table functionality, let's merge our two csv 
+# files together so that we have every variable accessible to us for this analysis. 
+# Note I like to work with the data.table package, though there are other ways to do this!
+
+# In order to do this, we need 1 shared column between the two datasets.
+# For most psychology cases, this is probably going to be a participant ID number.
+# Note that for this to work, you need the columns to have an exact match of name!
+# First let's check that they are the same!!
+names(experiment.data)
+names(item.level.data)
+
+# First off our subject ID columns are not the same. Let's swap that.
+setnames(item.level.data,"tmp.dat.subject.1.","SubjectNo")
+setnames(experiment.data,"Sub","SubjectNo") # Make this clearer!!! 
+
+# If you need to do more than 1, use the c() operator! 
+# Now if we look at this column, it's all messe up. 
+# The code below fixes it, if you want to learn more about regex, check it out
+# if not, just skip below.
+
+item.level.data$SubjectNo <- str_replace_all(string = item.level.data$SubjectNo, pattern = ".csv", replacement = "")
+item.level.data$SubjectNo <- str_replace_all(string = item.level.data$SubjectNo, pattern = "C", replacement = "")
+item.level.data$SubjectNo <- str_replace_all(string = item.level.data$SubjectNo, pattern = "M", replacement = "")
+item.level.data$SubjectNo <- str_replace_all(string = item.level.data$SubjectNo, pattern = "CM", replacement = "")
+item.level.data$SubjectNo <- as.numeric(item.level.data$SubjectNo)
+
+# Let's just quickly check to see if all the subject numbers make sense
+hist(experiment.data$SubjectNo) # Cause for alarm! Negative values and placeholders!
+
+# Drop those 
+experiment.data <- experiment.data[experiment.data$SubjectNo > 0 & experiment.data$SubjectNo < 1000,]
+
+# Note this works because the SubjectNo variable is numeric 
+hist(experiment.data$SubjectNo)
+hist(item.level.data$SubjectNo)
+
+# Ok, finally we merge our datasets. What we are doing here is called an "inner join"
+# Here we willkeep all of the ROWS of the dataset in the middle of the command 
+# Note we need to swap over our key to be a character value.
+item.level.data <- data.table(item.level.data)
+experiment.data <- data.table(experiment.data)
+
+item.level.data
+
+exp.data <- item.level.data[experiment.data, on="SubjectNo"]
+
+exp.data
+
+# View(exp.data) # Use View to hover over column number
+
+# Let's reorganize our columns so individual stuff is at the back
+# We could do this with data.table, but it's a different syntax so let's swap back
+# Normally you try to stick to minimal switching, but we're just taking 
+# a big tour du R right now and learning to think 
+exp.data <- data.frame(exp.data)
+exp.data <- exp.data[,c(1,40:100,2:39)]
+View(exp.data)
+
+#======================================================================================================
+# Checking for Univariate Outliers
+#--------------------------------------------------
+# For this example, let's imagine a univariate outlier is one with a zscore
+# greater than 3. While we could write a bit of code to look for this, let's use 
+# the pairs.panels() function in the psych pacakge to just get used to looking at our data
+# The function is not the biggest fan of huge datasets, so let's index our 
+# dataset to only grab what we need. Try to change the values and look 
+# at variables of interest. 
+
+pairs.panels(exp.data[,2:7], lm = TRUE)
+
+# But of course we need to look at numbers in terms of their zscores!
+# Let's first standardize our entire dataset using the apply function
+# Note we only can do this on numeric values! 
+
+# The apply function takes 3 argument
+# The first is what you want to manipulate, the second is if it's rows 1 or columns 2
+# (remeber this because it's always rows then columns!), and the function.
+# You can even write your own (though we'll get to functions later)
+gmsi.z.scores <- apply(exp.data[2:7],2,scale)
+
+exp.data.with.z <- cbind(exp.data, gmsi.z.scores)
+
+# Now we can index this to find values above whatever theshold we want!
+
+table(gmsi.z.scores > 2)
+gmsi.z.indexer <- gmsi.z.scores > 2
+gmsi.z.scores[gmsi.z.indexer] # See what they are, find them , decide to get rid of
+
+
+#======================================================================================================
+# Checking for Multivariate Outliers
+#--------------------------------------------------
+# A bit tricker, I leanred how to do this off a blog post.
+gmsi.responses <- exp.data[,c(63:100)]
+
+mahal <- mahalanobis(gmsi.responses,
+                     colMeans(gmsi.responses, na.rm = TRUE), 
+                     cov(gmsi.responses, 
+                         use = "pairwise.complete.obs"))                    ## Create Distance Measures
+
+cutoff <- qchisq(.999, ncol(gmsi.responses))                                ## Create cutoff object .001 signifiance and DF = obs
+summary(mahal < cutoff)                                                     ## 11 Subjects greater than 70 cutoff 
+
+# Add On Variables 
+exp.data$mahal <- mahal
+exp.data <- data.table(exp.data) # To use easier indexer, needs data.table 
+exp.data[exp.data$mahal < cutoff]
+
+#======================================================================================================
+# Checking for Skew and Kurtosis 
+#--------------------------------------------------
+apply(gmsi.responses, 2, skew)
+apply(gmsi.responses, 2 , kurtosi)
+
+#======================================================================================================
+# Exporting Data
+#--------------------------------------------------
+# It's best practice to separate your cleaning and your analysis into separate scripts.
+# Export the dataset you have into a new csv file into a directory that would make sense to 
+# someone who has never seen your project before. 
+
+write.csv(exp.data,"My_Experiment_Data.csv")
+#======================================================================================================

@@ -67,19 +67,6 @@
 
 
 #======================================================================================================
-# Melting and Casting Data
-#--------------------------------------------------
-# To do most plotting and analysis in R your data needs to be in a 'tidy' format.
-# Tidy data, according to Hadley Wickham meets three conditions
-# 1. Each variable forms a column 
-# 2. Each observation forms a row 
-# 3. Each type of observational unit forms a table 
-# We won't worry about point 3 for now, but do you see any column that we might want to have on each data point
-# for grouping purposes? Let's use the data.table package to melt our data from wide format to long.
-
-
-
-#======================================================================================================
 # Merging Data
 #--------------------------------------------------
 # Often we will have data from other spreadsheets we want to attach such as demographic data 
@@ -96,6 +83,12 @@
 
 #======================================================================================================
 # Checking for Multivariate Outliers
+#--------------------------------------------------
+
+
+
+#======================================================================================================
+# Checking for Skew and Kurtosis 
 #--------------------------------------------------
 
 
