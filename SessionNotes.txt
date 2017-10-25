@@ -1,0 +1,5 @@
+Session Notes
+
+Need to have more tractable session goals
+Find way to have working directory thing take less
+	Smaller data analysis, make clearer goals with it

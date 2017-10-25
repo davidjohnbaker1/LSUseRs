@@ -32,4 +32,3 @@ Good data keeping practices are also mentioned here.
 
 * [Swirl, learn R in R](http://swirlstats.com/)
 * [Stackoverflow](http://stackoverflow.com)
-
