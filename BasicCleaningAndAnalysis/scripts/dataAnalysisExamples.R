@@ -18,6 +18,11 @@ library(data.table)
 setwd("/Users/davidjohnbaker/Desktop/projects/LSUseRs/BasicCleaningAndAnalysis/data/")
 explore.me <- read.csv("My_Experiment_Data.csv")
 str(explore.me) # note it still thinks strings are factors, not everything was cleaned
+#--------------------------------------------------
+# Get Rid of No Response Gender
+explore.me <- data.table(explore.me)
+explore.me <- explore.me[Gender == "Male" | Gender == "Female"]
+explore.me$Gender <- as.factor(explore.me$Gender)
 
 #======================================================================================================
 # Plots
@@ -57,7 +62,8 @@ t.test(explore.me$RavenB1, explore.me$RavenB2)
 t.test(explore.me$RavenB1, explore.me$RavenB2, paired = TRUE)
 t.test(explore.me$RavenB1, explore.me$RavenB2,var.equal = TRUE)
 
-# What if you wanted to t.test gender? Save for melt lesson 
+## For Long
+t.test(RavenB1 ~ Gender, data = explore.me)
 
 #======================================================================================================
 # Correlation
@@ -79,6 +85,8 @@ my.model.2 <- lm(GENERAL ~ MelodicAcc + BeatAcc, data = explore.me)
 
 summary(my.model.1)
 summary(my.model.2)
+
+anova(my.model.1,my.model.2)
 
 # Note that inside the model are more values of use!
 my.model.1$coefficients
