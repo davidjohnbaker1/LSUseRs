@@ -11,6 +11,7 @@
 library(psych)
 library(ggplot2)
 library(data.table)
+library(catterplots)
 
 #======================================================================================================
 # Set Wd and Import Data 
@@ -37,7 +38,7 @@ ggplot(explore.me,
 
 # Does it make sense to use a line? 
 ggplot(explore.me, 
-       aes(x = TspanAbsScore, y = GENERAL)) + geom_line()
+       aes(x = TspanAbsScore, y = GENERAL)) + geom_line() 
 
 ggplot(explore.me, 
        aes(x = TspanAbsScore, y = GENERAL, color = Gender)) + geom_point()
@@ -47,7 +48,8 @@ ggplot(explore.me,
 
 ggplot(explore.me, 
        aes(x = TspanAbsScore, y = GENERAL, color = Gender, size = Age)) + geom_point() +
-      labs(title ="A Sweet Plot", x = "Tone Span", y = "General Sophistication") + geom_smooth(method = "lm")
+      labs(title ="A Sweet Plot", x = "Tone Span", y = "General Sophistication") + 
+      geom_smooth(method = "lm")
 
 # Great for spotting outliers, weird codings in your data
 # GGPLOT IS NOT JUST END GAME
@@ -61,6 +63,7 @@ ggplot(explore.me,
 t.test(explore.me$RavenB1, explore.me$RavenB2)
 t.test(explore.me$RavenB1, explore.me$RavenB2, paired = TRUE)
 t.test(explore.me$RavenB1, explore.me$RavenB2,var.equal = TRUE)
+model.t <- t.test(explore.me$RavenB1, explore.me$RavenB2,var.equal = TRUE)
 
 ## For Long
 t.test(RavenB1 ~ Gender, data = explore.me)
@@ -74,6 +77,12 @@ t.test(RavenB1 ~ Gender, data = explore.me)
 
 cor(explore.me$SINGING, explore.me$EMOTIONS)
 cor(explore.me$SINGING, explore.me$EMOTIONS,method = "kendall")
+
+View(explore.me)
+temp <- explore.me[,c(1:12)]
+cor(temp[,-c(1,(9:12))])
+
+temp[1,c(2:4)]
 
 #======================================================================================================
 # Regression? 
